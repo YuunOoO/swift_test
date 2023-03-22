@@ -15,15 +15,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
+        disabledColor: Colors.green,
         primarySwatch: Colors.blue,
       ),
       home: const MyHomePage(title: 'Flutter Demo Home Page'),
@@ -51,25 +43,24 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   static const batteryChanel = MethodChannel('com.exampleDL.swiftTest/battery');
-  static const advertiseChanel = MethodChannel('com.exampleDL.swiftTest/advertise');
+  static const advertiseChanel =
+      MethodChannel('com.exampleDL.swiftTest/advertise');
 
   TextEditingController controller = TextEditingController();
 
-
   String batteryLevel = "Waitinig ..";
-  String status ="unknown";
+  String status = "unknown";
   String status2 = "idk";
   List<String> logs = ["logi"];
-  void onListenStatus(){
-    batteryChanel.setMethodCallHandler((call) async{
-      if(call.method == "getStatus"){
+  void onListenStatus() {
+    batteryChanel.setMethodCallHandler((call) async {
+      if (call.method == "getStatus") {
         final String newStatus = call.arguments;
         setState(() {
           status2 = newStatus;
         });
-
       }
-      if(call.method == "logs"){
+      if (call.method == "logs") {
         print("logi");
         setState(() {
           logs.add(call.arguments);
@@ -87,91 +78,93 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       body: SingleChildScrollView(
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              SizedBox(height:MediaQuery.of(context).size.width*.15),
+              SizedBox(height: MediaQuery.of(context).size.width * .15),
               Center(
-                  child:Text(
-                    "Status: $status"
-                        ,style:TextStyle(fontSize:24),
-                  )),
-              
-
-               Center(
-                 child: Text(
+                  child: Text(
+                "Status: $status",
+                style: const TextStyle(fontSize: 24),
+              )),
+              Center(
+                child: Text(
                   batteryLevel,
-                  style:TextStyle(fontSize:30,),
+                  style: const TextStyle(
+                    fontSize: 30,
+                  ),
+                ),
               ),
-               ),
-              SizedBox(height: 15),
+              const SizedBox(height: 15),
               ElevatedButton(
-                child:Text("Get battery level"),
-                onPressed: getBatteryLevel,),
-            GestureDetector(
-              child:Container(
-                height: MediaQuery.of(context).size.height*.15,
-                width: MediaQuery.of(context).size.width,
-                color:Colors.green,
-                child:Center(
-                  child:Text("Advertise")
-                  ,)
-                ,),
-              onTap: initAdvertise,),
+                onPressed: getBatteryLevel,
+                child: const Text("Get battery level"),
+              ),
               GestureDetector(
-                child:Container(
-                  height: MediaQuery.of(context).size.height*.15,
+                onTap: initAdvertise,
+                child: Container(
+                  height: MediaQuery.of(context).size.height * .15,
                   width: MediaQuery.of(context).size.width,
-                  color:Colors.blue,
-                  child:Center(
-                    child:Text("Go to scan")
-                    ,)
-                  ,),
-                onTap: (){
+                  color: Colors.green,
+                  child: const Center(
+                    child: Text("Advertise"),
+                  ),
+                ),
+              ),
+              GestureDetector(
+                child: Container(
+                  height: MediaQuery.of(context).size.height * .15,
+                  width: MediaQuery.of(context).size.width,
+                  color: Colors.blue,
+                  child: const Center(
+                    child: Text("Go to scan"),
+                  ),
+                ),
+                onTap: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => Scan()),
                   );
-                },),
+                },
+              ),
               Center(
-                  child:Text(
-                    "Status: $status2"
-                    ,style:TextStyle(fontSize:24),
-                  )),
-              SizedBox(height:MediaQuery.of(context).size.width*.05),
-               TextField(
+                  child: Text(
+                "Status: $status2",
+                style: const TextStyle(fontSize: 24),
+              )),
+              SizedBox(height: MediaQuery.of(context).size.width * .05),
+              TextField(
                 controller: controller,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   border: OutlineInputBorder(),
                   labelText: 'Message',
                 ),
               ),
-              SizedBox(height:MediaQuery.of(context).size.width*.05),
+              SizedBox(height: MediaQuery.of(context).size.width * .05),
               ElevatedButton(
-                child:Text("Send message"),
-                onPressed: sendMessage,),
-              SizedBox(height:MediaQuery.of(context).size.width*.05),
-             Container(
-               height: MediaQuery.of(context).size.height*0.3,
-               child: ListView.builder(
-                 itemCount: logs.length,
-                   shrinkWrap: true,
-                   itemBuilder: (context,index){
-
-                 return Container(
-
-                   child: Text(
-                     logs[index]
-                     ,style:TextStyle(fontSize:14,color:Colors.orange),
-                   ),
-                 );
-               }),
-             ),
-              SizedBox(height:MediaQuery.of(context).size.height*.1),
+                onPressed: sendMessage,
+                child: const Text("Send message"),
+              ),
+              SizedBox(height: MediaQuery.of(context).size.width * .05),
+              SizedBox(
+                height: MediaQuery.of(context).size.height * 0.3,
+                child: ListView.builder(
+                    itemCount: logs.length,
+                    shrinkWrap: true,
+                    itemBuilder: (context, index) {
+                      return Container(
+                        child: Text(
+                          logs[index],
+                          style: const TextStyle(
+                              fontSize: 14, color: Colors.orange),
+                        ),
+                      );
+                    }),
+              ),
+              SizedBox(height: MediaQuery.of(context).size.height * .1),
             ],
           ),
         ),
@@ -179,25 +172,24 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Future initAdvertise()async{
+  Future initAdvertise() async {
     String newStatus = await batteryChanel.invokeMethod('advertise');
     setState(() {
       status = newStatus;
     });
   }
 
-  Future sendMessage()async{
-    final message = {'message':'${controller.text}'};
-    await  batteryChanel.invokeMethod('send',message);
+  Future sendMessage() async {
+    final message = {'message': '${controller.text}'};
+    String what = await batteryChanel.invokeMethod('send', message);
   }
 
-
-  Future getBatteryLevel()async{
-    final String newBateryLevel = await batteryChanel.invokeMethod('getBatteryLevel');
+  Future getBatteryLevel() async {
+    final String newBateryLevel =
+        await batteryChanel.invokeMethod('getBatteryLevel');
 
     setState(() {
       batteryLevel = '$newBateryLevel %';
     });
-
   }
 }
