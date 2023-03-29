@@ -55,6 +55,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void onListenStatus() {
     batteryChanel.setMethodCallHandler((call) async {
       if (call.method == "getStatus") {
+        print("getstatus");
         final String newStatus = call.arguments;
         setState(() {
           status2 = newStatus;
@@ -181,7 +182,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future sendMessage() async {
     final message = {'message': '${controller.text}'};
-    String what = await batteryChanel.invokeMethod('send', message);
+    String messageFromKotlin =
+        await batteryChanel.invokeMethod('send', message);
+    print(messageFromKotlin);
   }
 
   Future getBatteryLevel() async {

@@ -30,6 +30,7 @@ class MainActivity: FlutterActivity() {
             }else if(call.method.equals("send")){
 
                 var message = call.argument("message") ?: "empty message"
+                print("sending?");
                 adv.bleIndicate(message)
 
             }else if(call.method.equals("getState")){

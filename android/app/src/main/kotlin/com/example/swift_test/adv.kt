@@ -1,4 +1,3 @@
-
 import android.Manifest
 import android.app.Activity
 import android.bluetooth.*
@@ -9,21 +8,13 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
-import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
-
 import android.os.ParcelUuid
-import android.os.PersistableBundle
 import android.util.Log
-import android.view.View
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat.getSystemService
-import com.example.swift_test.R
-import java.text.SimpleDateFormat
-import java.util.*
-import io.flutter.embedding.android.FlutterActivity;
-import android.bluetooth.BluetoothManager
 import io.flutter.plugin.common.MethodChannel
+import java.util.*
+
 
 private const val ENABLE_BLUETOOTH_REQUEST_CODE = 1
 private const val BLUETOOTH_ALL_PERMISSIONS_REQUEST_CODE = 2
@@ -35,58 +26,25 @@ private const val CCC_DESCRIPTOR_UUID = "00002902-0000-1000-8000-00805f9b34fb"
 
 class Adv(val context: Context,val activity: Activity,val channel: MethodChannel)  : AppCompatActivity()  {
 
-
-
-     var textViewLog: String
-         = "logs";
-
      var textViewConnectionState: String
          = "state"
-     var textViewSubscribers: String
-         = "text";
 
      var isAdvertising = false
 
     private var textViewCharForWrite: String
             = "text";
-    private val editTextCharForRead: String
-            = "text";
-    private val editTextCharForIndicate: String
-            = "text";
-
 
     override fun onDestroy() {
        bleStopAdvertising()
        super.onDestroy()
     }
 
-
-
-    fun onTapClearLog(view: View) {
-        textViewLog = "Logs:"
-        appendLog("log cleared")
-    }
-
     private fun appendLog(message: String) {
-
         Log.d("appendLog", message)
-            val strTime = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())
-            textViewLog = textViewLog + "\n$strTime $message"
-        channel.invokeMethod("logs",message)
-        print(message)
-
-        //send todo
-    }
-
-    private fun updateSubscribersUI() {
-        val strSubscribers = "${subscribedDevices.count()} subscribers"
-            textViewSubscribers = strSubscribers
-
+        runOnUiThread { channel.invokeMethod("logs",message) }
     }
 
      fun prepareAndStartAdvertising() {
-
-         Log.d("TAG","prepare");
         ensureBluetoothCanBeUsed { isSuccess, message ->
                 appendLog(message)
                 if (isSuccess) {
@@ -102,7 +60,6 @@ class Adv(val context: Context,val activity: Activity,val channel: MethodChannel
         isAdvertising = true
         bleStartGattServer()
         bleAdvertiser.startAdvertising(advertiseSettings, advertiseData, advertiseCallback)
-         Log.d("TAG","advertiseeee");
     }
 
     private fun bleStopAdvertising() {
@@ -112,7 +69,7 @@ class Adv(val context: Context,val activity: Activity,val channel: MethodChannel
     }
 
     private fun bleStartGattServer() {
-        print("wtff1")
+
         val gattServer = bluetoothManager.openGattServer(context, gattServerCallback)
         val service = BluetoothGattService(UUID.fromString(SERVICE_UUID), BluetoothGattService.SERVICE_TYPE_PRIMARY)
         var charForRead = BluetoothGattCharacteristic(UUID.fromString(CHAR_FOR_READ_UUID),
@@ -131,10 +88,9 @@ class Adv(val context: Context,val activity: Activity,val channel: MethodChannel
         service.addCharacteristic(charForRead)
         service.addCharacteristic(charForWrite)
         service.addCharacteristic(charForIndicate)
-        Log.d("TAG","chary")
-
         val result = gattServer.addService(service)
-        this.gattServer = gattServer
+        this.gattServer = gattServer;
+
         appendLog("addService " + when(result) {
             true -> "OK"
             false -> "fail"
@@ -145,21 +101,19 @@ class Adv(val context: Context,val activity: Activity,val channel: MethodChannel
         gattServer?.close()
         gattServer = null
         appendLog("gattServer closed")
-
-            textViewConnectionState = "Dissconected"
+        textViewConnectionState = "Dissconected"
         }
-
 
      fun bleIndicate(text: String) {
-         Log.d("TAG","Indicate")
         val data = text.toByteArray(Charsets.UTF_8)
-        charForIndicate?.let {
-            it.value = data
-            for (device in subscribedDevices) {
-                appendLog("sending indication \"$text\"")
-                gattServer?.notifyCharacteristicChanged(device, it, true)
-            }
-        }
+
+         charForIndicate?.let {
+             it.value = data
+             for (device in subscribedDevices) {
+                 appendLog("sending indication \"$text\"")
+                 gattServer?.notifyCharacteristicChanged(device, it, true)
+             }
+         }
     }
 
     private val bluetoothManager: BluetoothManager by lazy {
@@ -188,12 +142,10 @@ class Adv(val context: Context,val activity: Activity,val channel: MethodChannel
 
     private val advertiseCallback = object : AdvertiseCallback() {
         override fun onStartSuccess(settingsInEffect: AdvertiseSettings) {
-            Log.d("TAG","success adv");
            appendLog("Advertise start success\n$SERVICE_UUID")
         }
 
         override fun onStartFailure(errorCode: Int) {
-            Log.d("TAG","error advertise");
             val desc = when (errorCode) {
                 ADVERTISE_FAILED_DATA_TOO_LARGE -> "\nADVERTISE_FAILED_DATA_TOO_LARGE"
                 ADVERTISE_FAILED_TOO_MANY_ADVERTISERS -> "\nADVERTISE_FAILED_TOO_MANY_ADVERTISERS"
@@ -210,7 +162,7 @@ class Adv(val context: Context,val activity: Activity,val channel: MethodChannel
 
     //region BLE GATT server
     private var gattServer: BluetoothGattServer? = null
-    private val charForIndicate  = gattServer?.getService(UUID.fromString(SERVICE_UUID))?.getCharacteristic(UUID.fromString(CHAR_FOR_INDICATE_UUID))
+    private val charForIndicate get() = gattServer?.getService(UUID.fromString(SERVICE_UUID))?.getCharacteristic(UUID.fromString(CHAR_FOR_INDICATE_UUID))
     private val subscribedDevices = mutableSetOf<BluetoothDevice>()
 
     private val gattServerCallback = object : BluetoothGattServerCallback() {
@@ -219,14 +171,10 @@ class Adv(val context: Context,val activity: Activity,val channel: MethodChannel
                 if (newState == BluetoothProfile.STATE_CONNECTED) {
                     textViewConnectionState= "Connected"
                     appendLog("Central did connect")
-                    Log.d("TAG", "Central did connect")
                 } else {
                     textViewConnectionState = "Dc"
                     appendLog("Central did disconnect")
-                    Log.d("TAG", "Central did disconnect")
-
                     subscribedDevices.remove(device)
-                    updateSubscribersUI()
                 }
             channel.invokeMethod("getStatus",textViewConnectionState)
 
@@ -234,21 +182,6 @@ class Adv(val context: Context,val activity: Activity,val channel: MethodChannel
 
         override fun onNotificationSent(device: BluetoothDevice, status: Int) {
             appendLog("onNotificationSent status=$status")
-        }
-
-        override fun onCharacteristicReadRequest(device: BluetoothDevice, requestId: Int, offset: Int, characteristic: BluetoothGattCharacteristic) {
-            var log: String = "onCharacteristicRead offset=$offset"
-            if (characteristic.uuid == UUID.fromString(CHAR_FOR_READ_UUID)) {
-
-                    val strValue = editTextCharForRead
-                    gattServer?.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, 0, strValue.toByteArray(Charsets.UTF_8))
-                    log += "\nresponse=success, value=\"$strValue\""
-                 //   appendLog(log)
-            } else {
-                gattServer?.sendResponse(device, requestId, BluetoothGatt.GATT_FAILURE, 0, null)
-                log += "\nresponse=failure, unknown UUID\n${characteristic.uuid}"
-               appendLog(log)
-            }
         }
 
         override fun onCharacteristicWriteRequest(device: BluetoothDevice, requestId: Int, characteristic: BluetoothGattCharacteristic, preparedWrite: Boolean, responseNeeded: Boolean, offset: Int, value: ByteArray?) {
@@ -261,9 +194,7 @@ class Adv(val context: Context,val activity: Activity,val channel: MethodChannel
                 } else {
                     log += "\nresponse=notNeeded, value=\"$strValue\""
                 }
-             //   runOnUiThread {
                     textViewCharForWrite= strValue
-             //   }
             } else {
                 if (responseNeeded) {
                     gattServer?.sendResponse(device, requestId, BluetoothGatt.GATT_FAILURE, 0, null)
@@ -311,7 +242,6 @@ class Adv(val context: Context,val activity: Activity,val channel: MethodChannel
                 if (responseNeeded) {
                     gattServer?.sendResponse(device, requestId, status, 0, null)
                 }
-                updateSubscribersUI()
             } else {
                 strLog += " unknown uuid=${descriptor.uuid}"
                 if (responseNeeded) {
@@ -386,7 +316,6 @@ class Adv(val context: Context,val activity: Activity,val channel: MethodChannel
                 //    startActivityForResult(Intent(intentString), requestCode)
                 }
             }
-
             // start activity for the request
          //   startActivityForResult(Intent(intentString), requestCode)
         }
@@ -412,8 +341,6 @@ class Adv(val context: Context,val activity: Activity,val channel: MethodChannel
         if (wantedPermissions.isEmpty() || hasPermissions(wantedPermissions)) {
             completion(true)
         } else {
-
-            //  runOnUiThread {
             val requestCode = BLUETOOTH_ALL_PERMISSIONS_REQUEST_CODE
 
             // set permission result handler
@@ -428,15 +355,7 @@ class Adv(val context: Context,val activity: Activity,val channel: MethodChannel
 
                 }
             }
-
             requestPermissionArray(wantedPermissions, requestCode)
-
         }
-
-
-
-
-
     }
-    //endregion
 }
