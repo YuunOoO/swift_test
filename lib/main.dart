@@ -43,6 +43,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   static const batteryChanel = MethodChannel('com.exampleDL.swiftTest/battery');
+  //todo refactor battery to advertise
   static const advertiseChanel =
       MethodChannel('com.exampleDL.swiftTest/advertise');
 
