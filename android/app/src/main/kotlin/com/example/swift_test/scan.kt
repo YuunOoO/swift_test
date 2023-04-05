@@ -89,7 +89,7 @@ class Scan(val context: Context,val activity: Activity,val channel: MethodChanne
         runOnUiThread { channel.invokeMethod("logs",message) }
     }
 
-    private fun bleEndLifecycle() {
+     fun bleEndLifecycle() {
         safeStopBleScan()
         connectedGatt?.close()
         setConnectedGattToNull()

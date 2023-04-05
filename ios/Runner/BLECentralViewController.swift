@@ -94,18 +94,15 @@ class BLECentralViewController: UIViewController {
 // MARK: - UI related methods
 extension BLECentralViewController {
     func appendLog(_ message: String) {
-        let logLine = "\(timeFormatter.string(from: Date())) \(message)"
-        print("DEBUG: \(logLine)")
-        
+        let logLine = "\(timeFormatter.string(from: Date())) \(message)"    
         self.channel.invokeMethod("logs",arguments: logLine)
-
         updateUIStatus()
     }
 
     func updateUIStatus() {
         textViewStatus = bleGetStatusString()
         self.channel.invokeMethod("getStatus",arguments: textViewStatus)
-        print("invoked")    }
+          }
 
     var userWantsToScanAndConnect: Bool {
         false

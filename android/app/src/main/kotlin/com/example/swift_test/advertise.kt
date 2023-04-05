@@ -1,3 +1,5 @@
+package com.example.swift_test
+
 import android.Manifest
 import android.app.Activity
 import android.bluetooth.*
@@ -14,6 +16,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import io.flutter.plugin.common.MethodChannel
 import java.util.*
+import kotlin.properties.Delegates
 
 
 private const val ENABLE_BLUETOOTH_REQUEST_CODE = 1
@@ -24,15 +27,16 @@ private const val CHAR_FOR_WRITE_UUID = "25AE1443-05D3-4C5B-8281-93D4E07420CF"
 private const val CHAR_FOR_INDICATE_UUID = "25AE1444-05D3-4C5B-8281-93D4E07420CF"
 private const val CCC_DESCRIPTOR_UUID = "00002902-0000-1000-8000-00805f9b34fb"
 
-class Adv(val context: Context,val activity: Activity,val channel: MethodChannel)  : AppCompatActivity()  {
+class Advertise(val context: Context,val activity: Activity,val channel: MethodChannel)  : AppCompatActivity()  {
 
-     var textViewConnectionState: String
-         = "state"
+     var textViewConnectionState: String by Delegates.observable("unknown") { _, old, new ->
+         channel.invokeMethod("getStatus",new)
+     }
 
      var isAdvertising = false
 
     private var textViewCharForWrite: String
-            = "text";
+            = "text"
 
     override fun onDestroy() {
        bleStopAdvertising()
@@ -52,17 +56,17 @@ class Adv(val context: Context,val activity: Activity,val channel: MethodChannel
                 } else {
                     isAdvertising = false
                 }
-
         }
     }
 
      fun bleStartAdvertising() {
         isAdvertising = true
+         textViewConnectionState = "Advertising"
         bleStartGattServer()
         bleAdvertiser.startAdvertising(advertiseSettings, advertiseData, advertiseCallback)
     }
 
-    private fun bleStopAdvertising() {
+     fun bleStopAdvertising() {
         isAdvertising = false
         bleStopGattServer()
         bleAdvertiser.stopAdvertising(advertiseCallback)
@@ -72,16 +76,16 @@ class Adv(val context: Context,val activity: Activity,val channel: MethodChannel
 
         val gattServer = bluetoothManager.openGattServer(context, gattServerCallback)
         val service = BluetoothGattService(UUID.fromString(SERVICE_UUID), BluetoothGattService.SERVICE_TYPE_PRIMARY)
-        var charForRead = BluetoothGattCharacteristic(UUID.fromString(CHAR_FOR_READ_UUID),
+        val charForRead = BluetoothGattCharacteristic(UUID.fromString(CHAR_FOR_READ_UUID),
                 BluetoothGattCharacteristic.PROPERTY_READ,
                 BluetoothGattCharacteristic.PERMISSION_READ)
-        var charForWrite = BluetoothGattCharacteristic(UUID.fromString(CHAR_FOR_WRITE_UUID),
+        val charForWrite = BluetoothGattCharacteristic(UUID.fromString(CHAR_FOR_WRITE_UUID),
                 BluetoothGattCharacteristic.PROPERTY_WRITE,
                 BluetoothGattCharacteristic.PERMISSION_WRITE)
-        var charForIndicate = BluetoothGattCharacteristic(UUID.fromString(CHAR_FOR_INDICATE_UUID),
+        val charForIndicate = BluetoothGattCharacteristic(UUID.fromString(CHAR_FOR_INDICATE_UUID),
                 BluetoothGattCharacteristic.PROPERTY_INDICATE,
                 BluetoothGattCharacteristic.PERMISSION_READ)
-        var charConfigDescriptor = BluetoothGattDescriptor(UUID.fromString(CCC_DESCRIPTOR_UUID),
+        val charConfigDescriptor = BluetoothGattDescriptor(UUID.fromString(CCC_DESCRIPTOR_UUID),
                 BluetoothGattDescriptor.PERMISSION_READ or BluetoothGattDescriptor.PERMISSION_WRITE)
         charForIndicate.addDescriptor(charConfigDescriptor)
 
@@ -89,7 +93,7 @@ class Adv(val context: Context,val activity: Activity,val channel: MethodChannel
         service.addCharacteristic(charForWrite)
         service.addCharacteristic(charForIndicate)
         val result = gattServer.addService(service)
-        this.gattServer = gattServer;
+        this.gattServer = gattServer
 
         appendLog("addService " + when(result) {
             true -> "OK"
@@ -142,7 +146,7 @@ class Adv(val context: Context,val activity: Activity,val channel: MethodChannel
 
     private val advertiseCallback = object : AdvertiseCallback() {
         override fun onStartSuccess(settingsInEffect: AdvertiseSettings) {
-           appendLog("Advertise start success\n$SERVICE_UUID")
+           appendLog("com.example.swift_test.Advertise start success\n$SERVICE_UUID")
         }
 
         override fun onStartFailure(errorCode: Int) {
@@ -154,7 +158,7 @@ class Adv(val context: Context,val activity: Activity,val channel: MethodChannel
                 ADVERTISE_FAILED_FEATURE_UNSUPPORTED -> "\nADVERTISE_FAILED_FEATURE_UNSUPPORTED"
                 else -> ""
             }
-            appendLog("Advertise start failed: errorCode=$errorCode $desc")
+            appendLog("com.example.swift_test.Advertise start failed: errorCode=$errorCode $desc")
             //isAdvertising = false
         }
     }
@@ -162,7 +166,9 @@ class Adv(val context: Context,val activity: Activity,val channel: MethodChannel
 
     //region BLE GATT server
     private var gattServer: BluetoothGattServer? = null
-    private val charForIndicate get() = gattServer?.getService(UUID.fromString(SERVICE_UUID))?.getCharacteristic(UUID.fromString(CHAR_FOR_INDICATE_UUID))
+    private val charForIndicate get() = gattServer?.getService(UUID.fromString(SERVICE_UUID))?.getCharacteristic(UUID.fromString(
+        CHAR_FOR_INDICATE_UUID
+    ))
     private val subscribedDevices = mutableSetOf<BluetoothDevice>()
 
     private val gattServerCallback = object : BluetoothGattServerCallback() {
@@ -187,10 +193,11 @@ class Adv(val context: Context,val activity: Activity,val channel: MethodChannel
         override fun onCharacteristicWriteRequest(device: BluetoothDevice, requestId: Int, characteristic: BluetoothGattCharacteristic, preparedWrite: Boolean, responseNeeded: Boolean, offset: Int, value: ByteArray?) {
             var log: String = "onCharacteristicWrite offset=$offset responseNeeded=$responseNeeded preparedWrite=$preparedWrite"
             if (characteristic.uuid == UUID.fromString(CHAR_FOR_WRITE_UUID)) {
-                var strValue = value?.toString(Charsets.UTF_8) ?: ""
+                val strValue = value?.toString(Charsets.UTF_8) ?: ""
                 if (responseNeeded) {
                     gattServer?.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, 0, strValue.toByteArray(Charsets.UTF_8))
                     log += "\nresponse=success, value=\"$strValue\""
+                   // channel.invokeMethod("message","Send: $strValue")
                 } else {
                     log += "\nresponse=notNeeded, value=\"$strValue\""
                 }
@@ -205,6 +212,7 @@ class Adv(val context: Context,val activity: Activity,val channel: MethodChannel
             }
           appendLog(log)
         }
+
 
         override fun onDescriptorReadRequest(device: BluetoothDevice, requestId: Int, offset: Int, descriptor: BluetoothGattDescriptor) {
             var log = "onDescriptorReadRequest"
@@ -302,7 +310,7 @@ class Adv(val context: Context,val activity: Activity,val channel: MethodChannel
         if (bluetoothAdapter.isEnabled) {
             completion(true)
         } else {
-            val intentString = BluetoothAdapter.ACTION_REQUEST_ENABLE
+            BluetoothAdapter.ACTION_REQUEST_ENABLE
             val requestCode = ENABLE_BLUETOOTH_REQUEST_CODE
 
             // set activity result handler

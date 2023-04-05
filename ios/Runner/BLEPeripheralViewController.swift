@@ -44,10 +44,6 @@ class BLEPeripheralViewController: UIViewController {
     }
     override func viewDidLoad() {
         super.viewDidLoad()
-
-       
-        print("app start")
-
         initBLE()
     }
 
@@ -79,18 +75,13 @@ extension BLEPeripheralViewController {
     func appendLog(_ message: String) {
         let logLine = "\(timeFormatter.string(from: Date())) \(message)"
         self.channel.invokeMethod("logs",arguments: logLine)
-        print("DEBUG: \(logLine)")
-
 
         updateUIStatus()
     }
 
      func updateUIStatus() {
         textViewStatus = bleGetStatusString()
-         print(textViewStatus)
          self.channel.invokeMethod("getStatus",arguments: textViewStatus)
-         print("invoked")
-         //     var param
     }
 
     func updateUIAdvertising() {
@@ -147,12 +138,10 @@ extension BLEPeripheralViewController {
     private func bleStartAdvertising(_ advertisementData: String) {
         let dictionary: [String: Any] = [CBAdvertisementDataServiceUUIDsKey: [uuidService],
                                          CBAdvertisementDataLocalNameKey: advertisementData]
-        print("startAdvertising")
         blePeripheral.startAdvertising(dictionary)
     }
 
     private func bleStopAdvertising() {
-        print("stopAdvertising")
         blePeripheral.stopAdvertising()
     }
 
