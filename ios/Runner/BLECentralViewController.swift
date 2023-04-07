@@ -227,6 +227,10 @@ extension BLECentralViewController: CBCentralManagerDelegate {
         lifecycleState = .connectedDiscovering
         peripheral.delegate = self
         peripheral.discoverServices([uuidService])
+
+        // Pobieranie nazwy urządzenia Bluetooth
+    let deviceName = peripheral.name ?? "Nazwa nieznana"
+    print("Nazwa urządzenia: \(deviceName)")
     }
 
     func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {

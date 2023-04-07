@@ -49,7 +49,7 @@ class BLEPeripheralViewController: UIViewController {
 
     @IBAction func onSwitchChangeAdvertising(_ sender: Bool) {
         if sender == true {
-            bleStartAdvertising("Nadajemy")
+            bleStartAdvertising("Vocale_xxxx")
         } else {
             bleStopAdvertising()
         }

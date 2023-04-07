@@ -64,7 +64,10 @@ class Advertise(val context: Context,val activity: Activity,val channel: MethodC
          textViewConnectionState = "Advertising"
         bleStartGattServer()
         bleAdvertiser.startAdvertising(advertiseSettings, advertiseData, advertiseCallback)
-    }
+         val localName = "Vocale_xxxx"
+         bluetoothAdapter.name = localName
+
+     }
 
      fun bleStopAdvertising() {
         isAdvertising = false
@@ -93,7 +96,13 @@ class Advertise(val context: Context,val activity: Activity,val channel: MethodC
         service.addCharacteristic(charForWrite)
         service.addCharacteristic(charForIndicate)
         val result = gattServer.addService(service)
+        val localName = "Vocale"
+        bluetoothAdapter.name = localName
+
         this.gattServer = gattServer
+
+        Log.d("TAG", "Nazwa urządzenia: ${bluetoothAdapter.name}")
+
 
         appendLog("addService " + when(result) {
             true -> "OK"
@@ -140,9 +149,10 @@ class Advertise(val context: Context,val activity: Activity,val channel: MethodC
             .build()
 
     private val advertiseData = AdvertiseData.Builder()
-            .setIncludeDeviceName(false) // don't include name, because if name size > 8 bytes, ADVERTISE_FAILED_DATA_TOO_LARGE
+            .setIncludeDeviceName(true) // don't include name, because if name size > 8 bytes, ADVERTISE_FAILED_DATA_TOO_LARGE
             .addServiceUuid(ParcelUuid(UUID.fromString(SERVICE_UUID)))
             .build()
+
 
     private val advertiseCallback = object : AdvertiseCallback() {
         override fun onStartSuccess(settingsInEffect: AdvertiseSettings) {
