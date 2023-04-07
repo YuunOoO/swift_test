@@ -134,7 +134,7 @@ class Scan(val context: Context,val activity: Activity,val channel: MethodChanne
 
         isScanning = true
         lifecycleState = BLELifecycleState.Scanning
-        bleScanner.startScan(mutableListOf(scanFilter), scanSettings, scanCallback)
+        bleScanner.startScan(null, scanSettings, scanCallback)
     }
 
     private fun safeStopBleScan() {
