@@ -129,8 +129,8 @@ class Scan(val context: Context,val activity: Activity,val channel: MethodChanne
             return
         }
 
-        val serviceFilter = scanFilter.serviceUuid?.uuid.toString()
-        appendLog("Starting BLE scan, filter: $serviceFilter")
+       // val serviceFilter = scanFilter.serviceUuid?.uuid.toString()
+        //appendLog("Starting BLE scan, filter: $serviceFilter")
 
         isScanning = true
         lifecycleState = BLELifecycleState.Scanning

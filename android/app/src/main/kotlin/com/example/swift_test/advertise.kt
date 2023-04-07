@@ -64,7 +64,7 @@ class Advertise(val context: Context,val activity: Activity,val channel: MethodC
          textViewConnectionState = "Advertising"
         bleStartGattServer()
         bleAdvertiser.startAdvertising(advertiseSettings, advertiseData, advertiseCallback)
-         val localName = "Vocale_xxxx"
+         val localName = "Vclexxxx"
          bluetoothAdapter.name = localName
 
      }
