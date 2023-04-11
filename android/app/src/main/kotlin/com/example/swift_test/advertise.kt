@@ -62,11 +62,11 @@ class Advertise(val context: Context,val activity: Activity,val channel: MethodC
      fun bleStartAdvertising() {
         isAdvertising = true
          textViewConnectionState = "Advertising"
-        bleStartGattServer()
-        bleAdvertiser.startAdvertising(advertiseSettings, advertiseData, advertiseCallback)
          val localName = "Vclexxxx"
          bluetoothAdapter.name = localName
 
+        bleStartGattServer()
+        bleAdvertiser.startAdvertising(advertiseSettings, advertiseData, advertiseCallback)
      }
 
      fun bleStopAdvertising() {
@@ -96,8 +96,6 @@ class Advertise(val context: Context,val activity: Activity,val channel: MethodC
         service.addCharacteristic(charForWrite)
         service.addCharacteristic(charForIndicate)
         val result = gattServer.addService(service)
-        val localName = "Vocale"
-        bluetoothAdapter.name = localName
 
         this.gattServer = gattServer
 
@@ -143,9 +141,10 @@ class Advertise(val context: Context,val activity: Activity,val channel: MethodC
     }
 
     private val advertiseSettings = AdvertiseSettings.Builder()
-            .setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_BALANCED)
-            .setTxPowerLevel(AdvertiseSettings.ADVERTISE_TX_POWER_MEDIUM)
+            //.setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_BALANCED)
+            .setTxPowerLevel(AdvertiseSettings.ADVERTISE_TX_POWER_HIGH)
             .setConnectable(true)
+              .setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_LOW_POWER)
             .build()
 
     private val advertiseData = AdvertiseData.Builder()
