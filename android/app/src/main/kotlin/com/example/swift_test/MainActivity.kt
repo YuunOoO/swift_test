@@ -21,6 +21,7 @@ class MainActivity: FlutterActivity() {
             if(call.method.equals("sendMessage")){
                 val message = call.argument("message") ?: "empty message"
                 advertise.bleIndicate(message)
+
             }else if(call.method.equals("getState")){
                 result.success(advertise.textViewConnectionState)
             }else if(call.method.equals("advertise")){
